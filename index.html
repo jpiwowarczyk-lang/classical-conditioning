@@ -2,48 +2,139 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Classical Conditioning Lab</title>
+  <title>Classical Conditioning Visual Lab</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 650px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
-    .card { border: 1px solid #ccc; border-radius: 8px; padding: 1.5rem; background: #f9f9f9; }
-    .meter-container { background: #eee; height: 24px; border-radius: 12px; overflow: hidden; margin: 1rem 0; }
-    .meter-fill { background: #2563eb; height: 100%; width: 0%; transition: width 0.3s ease; }
-    .button-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-    button { padding: 0.6rem 1rem; border: none; border-radius: 4px; background: #2563eb; color: white; cursor: pointer; font-weight: bold; }
-    button:hover { background: #1d4ed8; }
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; background: #f0f4f8; }
+    h2 { text-align: center; color: #1e3a8a; margin-bottom: 0.5rem; }
+    .subtitle { text-align: center; font-weight: bold; color: #4b5563; margin-bottom: 2rem; }
+
+    /* --- Primary Page Layout --- */
+    .card { border: 1px solid #d1d5db; border-radius: 12px; padding: 2rem; background: #ffffff; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    
+    /* --- The Simulation "Stage" --- */
+    .lab-stage { display: flex; justify-content: center; align-items: flex-end; gap: 3rem; margin: 2rem 0; border: 2px dashed #9ca3af; border-radius: 12px; padding: 2rem; background: #fafafa; position: relative; }
+    
+    /* Shared style for visual containers */
+    .visual-container { text-align: center; width: 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 180px; position: relative;}
+    .visual-label { font-size: 0.85rem; color: #6b7280; font-weight: bold; margin-bottom: 0.5rem; }
+    .icon { font-size: 5rem; line-height: 1; transition: all 0.3s ease; filter: grayscale(100%); opacity: 0.5; }
+    
+    /* --- Specific Visual Elements --- */
+    
+    /* Bell - add a glowing, vibrating effect when active */
+    #cs-visual .icon { font-size: 4rem; filter: none; opacity: 1; }
+    #cs-visual.active .icon { color: #f59e0b; animation: vibrate 0.2s ease-in-out infinite; transform-origin: top center; text-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
+
+    /* Dog - the main subject */
+    #subject-visual .icon { filter: none; opacity: 1; }
+    
+    /* Salivation (Drool) puddle under the dog - hidden by default */
+    .drool { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) scale(0); font-size: 3rem; visibility: hidden; opacity: 0; transition: all 0.3s ease; }
+    .drool.active { visibility: visible; opacity: 1; transform: translateX(-50%) scale(1); filter: none; }
+    
+    /* Food bowl - hidden by default */
+    #ucs-visual .icon { font-size: 3.5rem; filter: none; opacity: 1; visibility: hidden; opacity: 0; }
+    #ucs-visual.active .icon { visibility: visible; opacity: 1; }
+
+    /* --- Lab Controls & Feedback --- */
+    .strength-indicator { font-weight: bold; margin-bottom: 0.5rem; }
+    .meter-container { background: #e5e7eb; height: 28px; border-radius: 14px; overflow: hidden; margin: 1rem 0; box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05); }
+    .meter-fill { background: #3b82f6; height: 100%; width: 0%; transition: width 0.3s ease; }
+    .meter-text { position: absolute; width: 100%; text-align: center; color: white; font-weight: bold; line-height: 28px; display: none; }
+    .meter-container:hover .meter-text { display: block; } /* Show % on hover */
+
+    .button-group { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; justify-content: center; }
+    button { padding: 0.75rem 1.25rem; border: none; border-radius: 8px; background: #3b82f6; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s; box-shadow: 0 2px 4px rgb(0 0 0 / 0.1); }
+    button:hover { background: #2563eb; }
     button.secondary { background: #6b7280; }
     button.secondary:hover { background: #4b5563; }
-    .log-box { background: #fff; border: 1px solid #ddd; height: 150px; overflow-y: auto; padding: 0.5rem; font-family: monospace; font-size: 0.9rem; }
+    button.reset { background: #dc2626; margin-left: auto; }
+    button.reset:hover { background: #b91c1c; }
+
+    .log-container { margin-top: 1rem; }
+    .log-box { background: #fff; border: 1px solid #d1d5db; height: 180px; overflow-y: auto; padding: 1rem; font-family: monospace; font-size: 0.9rem; border-radius: 8px; }
+
+    /* --- Animations --- */
+    @keyframes vibrate {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(10deg); }
+      75% { transform: rotate(-10deg); }
+      100% { transform: rotate(0deg); }
+    }
   </style>
 </head>
 <body>
 
   <h2>Classical Conditioning Sandbox</h2>
+  <div class="subtitle">Can you make the dog salivate to the bell?</div>
+
   <div class="card">
-    <div><strong>Conditioned Response (Salivation) Strength:</strong> <span id="strength-val">0%</span></div>
-    <div class="meter-container">
+    
+    <!-- --- The Simulation "Stage" --- -->
+    <div class="lab-stage">
+      
+      <!-- Bell (CS) -->
+      <div id="cs-visual" class="visual-container">
+        <div class="visual-label">CS (Bell)</div>
+        <div class="icon">🔔</div>
+      </div>
+
+      <!-- Dog (Subject) -->
+      <div id="subject-visual" class="visual-container">
+        <div class="visual-label">Subject (Dog)</div>
+        <div class="icon">🐕</div>
+        <!-- Drool Puddle, hidden by default -->
+        <div id="drool-visual" class="icon drool">💧</div>
+      </div>
+
+      <!-- Food Bowl (UCS) -->
+      <div id="ucs-visual" class="visual-container">
+        <div class="visual-label">UCS (Food)</div>
+        <div class="icon">🍖</div>
+      </div>
+    </div>
+    
+    <div class="strength-indicator">Association Strength ($\text{CS} \rightarrow \text{UCS}$): <span id="strength-val">0%</span></div>
+    <div class="meter-container" style="position: relative;">
       <div id="meter-fill" class="meter-fill"></div>
+      <div class="meter-text"><span id="meter-percent-text">0%</span> Complete</div>
     </div>
 
     <div class="button-group">
       <button onclick="runTrial('pair')">Pair Bell + Food (Acquisition)</button>
       <button onclick="runTrial('cs')" class="secondary">Ring Bell Alone (CS)</button>
       <button onclick="runTrial('ucs')" class="secondary">Present Food Alone (UCS)</button>
-      <button onclick="resetLab()" class="secondary" style="background:#dc2626;">Reset Lab</button>
+      <button onclick="resetLab()" class="reset">Reset Lab</button>
     </div>
 
-    <strong>Event Log:</strong>
-    <div id="log" class="log-box"></div>
+    <div class="log-container">
+      <strong>Event Log:</strong>
+      <div id="log" class="log-box"></div>
+    </div>
   </div>
 
   <script>
     let V = 0.0; // Association Strength (0.0 to 1.0)
-    const k = 0.25; // Learning rate
+    const k = 0.25; // Learning rate constant
+
+    // Cache visual element references
+    const csVisual = document.getElementById('cs-visual');
+    const ucsVisual = document.getElementById('ucs-visual');
+    const droolVisual = document.getElementById('drool-visual');
+
+    // Remove all temporary visual states
+    function clearVisuals() {
+      csVisual.classList.remove('active');
+      ucsVisual.classList.remove('active');
+      droolVisual.classList.remove('active');
+      droolVisual.style.transform = 'translateX(-50%) scale(0)'; // Reset scale
+    }
 
     function updateUI() {
       const pct = Math.round(V * 100);
       document.getElementById('strength-val').innerText = pct + '%';
       document.getElementById('meter-fill').style.width = pct + '%';
+      document.getElementById('meter-percent-text').innerText = pct + '%';
     }
 
     function logEvent(msg) {
@@ -52,25 +143,64 @@
     }
 
     function runTrial(type) {
+      clearVisuals(); // Start fresh
+
       if (type === 'pair') {
+        // --- 1. Perform Math ---
+        // Acquisition: Presenting UCS increases V toward maximum (1.0)
         V = V + k * (1.0 - V);
+        
+        // --- 2. Update Visuals ---
+        csVisual.classList.add('active'); // Ring Bell
+        ucsVisual.classList.add('active'); // Show Food
+        droolVisual.classList.add('active'); // Max Salivation (UCR)
+        
+        // --- 3. Log & Update UI ---
         logEvent(`[PAIRED TRIAL] Bell rang + Food presented. Bell association rose to ${Math.round(V*100)}%. Subject salivates (UCR).`);
+      
       } else if (type === 'cs') {
+        // --- 1. Perform Math ---
         const salivation = Math.round(V * 100);
-        V = V + k * (0.0 - V); // Extinction step
+        // Extinction: Presenting CS alone decreases V toward minimum (0.0)
+        V = V + k * (0.0 - V); 
+        
+        // --- 2. Update Visuals ---
+        csVisual.classList.add('active'); // Ring Bell
+        
+        // Show scaled drool ONLY if salivation occurs
+        if (salivation > 0) {
+          droolVisual.classList.add('active');
+          const scaleFactor = V; // scale of puddle (0 to 1)
+          droolVisual.style.transform = `translateX(-50%) scale(${scaleFactor})`;
+        }
+        
+        // --- 3. Log & Update UI ---
         logEvent(`[CS ALONE] Bell rang. Salivation output: ${salivation}%. Association dropped to ${Math.round(V*100)}% (Extinction).`);
+      
       } else if (type === 'ucs') {
+        // --- 1. Perform Math ---
+        // V does not change in this condition
+
+        // --- 2. Update Visuals ---
+        ucsVisual.classList.add('active'); // Show Food
+        droolVisual.classList.add('active'); // Max Salivation (UCR)
+        
+        // --- 3. Log & Update UI ---
         logEvent(`[UCS ALONE] Food presented. Subject salivates 100% (UCR). No effect on Bell association.`);
       }
       updateUI();
     }
 
     function resetLab() {
+      clearVisuals();
       V = 0.0;
       document.getElementById('log').innerHTML = '';
       logEvent('Lab reset. Subject unconditioned.');
       updateUI();
     }
+
+    // Initial UI state
+    updateUI();
   </script>
 </body>
 </html>
